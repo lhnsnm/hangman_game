@@ -10,6 +10,7 @@
 #define MAX_WORD_LENGTH 50
 #define MAX_HINT_LENGTH 100
 #define MAX_ATTEMPT 6
+#define ALPHABET_SIZE 26
 
 typedef struct WordHint
 {
@@ -45,7 +46,7 @@ int main()
     memset(guess_word, '_', secret_word_len);
     guess_word[secret_word_len] = '\0';
 
-    bool guess_letters[26] = {false};
+    bool guess_letters[ALPHABET_SIZE] = {false};
 
     // Intro message
     puts("Welcome to Hangman!");
