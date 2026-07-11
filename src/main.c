@@ -1,35 +1,13 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <time.h>
 #include <stdbool.h>
 #include <string.h>
-#include <ctype.h>
-#include <time.h>
+#include <stdio.h>
 
-#define MAX_WORDS 100
-#define MAX_WORD_LENGTH 50
-#define MAX_HINT_LENGTH 100
+#include "../include/display.h"
+#include "../include/helper.h"
+#include "../include/words.h"
+
 #define MAX_ATTEMPT 6
-#define ALPHABET_SIZE 26
-
-typedef struct WordHint
-{
-    char word[MAX_WORD_LENGTH];
-    char hint[MAX_HINT_LENGTH];
-} WordHint;
-
-int load_words(WordHint word_list[]);
-
-void display_word(const char guess_word[]);
-void draw_hangman(int attempt);
-
-char read_guess(void);
-bool is_valid_guess(char guess);
-bool mark_guess(bool letters[], char guess);
-
-bool reveal_guess(size_t len,
-                  char guess_word[],
-                  const char secret_word[],
-                  char guess);
 
 int main()
 {
@@ -110,109 +88,4 @@ int main()
     }
 
     return 0;
-}
-
-void display_word(const char guess_word[])
-{
-    printf("Word: ");
-
-    for (size_t i = 0; guess_word[i] != '\0'; i++)
-    {
-        printf("%c ", guess_word[i]);
-    }
-
-    printf("\n");
-}
-
-void draw_hangman(int attempt)
-{
-    const char *hangman_limbs[] = {
-        "      __________",
-        "     |          |",
-        "     |          0",
-        "     |         /|\\",
-        "     |         / \\",
-        "_____|______________"};
-
-    printf("\n");
-
-    for (int i = 0; i <= attempt && i < 6; i++)
-    {
-        printf("%s\n", hangman_limbs[i]);
-    }
-}
-
-int load_words(WordHint word_list[])
-{
-    FILE *fp = fopen("./data/words.txt", "r");
-
-    if (fp == NULL)
-    {
-        perror("fopen");
-        return 0;
-    }
-
-    char line[256];
-    int word_count = 0;
-
-    while (fgets(line, sizeof(line), fp) != NULL && word_count < MAX_WORDS)
-    {
-        if (sscanf(line, "%49[^|]|%99[^\n]",
-                   word_list[word_count].word,
-                   word_list[word_count].hint) == 2)
-            word_count++;
-    }
-    fclose(fp);
-    return word_count;
-}
-
-char read_guess(void)
-{
-    char buffer[100];
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
-        return '\0';
-
-    if (buffer[1] != '\n' && buffer[1] != '\0')
-    {
-        puts("Please enter only one letter.");
-        return '\0';
-    }
-
-    return tolower(buffer[0]);
-}
-
-bool is_valid_guess(char guess)
-{
-    if (guess < 'a' || guess > 'z')
-    {
-        puts("Please enter a valid alphabet.");
-        return false;
-    }
-    return true;
-}
-
-bool mark_guess(bool letters[], char guess)
-{
-    if (letters[guess - 'a'])
-        return false;
-    letters[guess - 'a'] = true;
-    return true;
-}
-
-bool reveal_guess(size_t len,
-                  char guess_word[],
-                  const char secret_word[],
-                  char guess)
-{
-    bool found = false;
-    for (size_t i = 0; i < len; i++)
-    {
-        if (secret_word[i] == guess)
-        {
-            guess_word[i] = guess;
-            found = true;
-        }
-    }
-
-    return found;
 }
