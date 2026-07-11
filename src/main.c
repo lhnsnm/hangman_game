@@ -4,30 +4,37 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <errno.h>
 
+#define MAX_WORDS 100
 #define MAX_WORD_LENGTH 50
+#define MAX_HINT_LENGTH 100
 #define MAX_ATTEMPT 6
 
 typedef struct WordHint
 {
     char word[MAX_WORD_LENGTH];
-    char hint[MAX_WORD_LENGTH];
+    char hint[MAX_HINT_LENGTH];
 } WordHint;
 
 void display_word(const char guess_word[]);
 void draw_hangman(int attempt);
+int load_words(WordHint word_list[]);
 
 int main()
 {
+    WordHint word_list[MAX_WORDS];
+    int word_list_count = load_words(word_list);
+
+    if (word_list_count == 0)
+    {
+        puts("Failed to load words or file empty.");
+        return 1;
+    }
+
     srand(time(NULL));
 
-    WordHint word_list[] = {
-        {"geeksforgeeks", "Computer coding"},
-        {"elephant", "A large mammal with a trunk"},
-        {"pizza", "A popular Italian dish"},
-        {"beach", "Sandy shore by the sea"}};
-
-    int secret_word_idx = rand() % 4;
+    int secret_word_idx = rand() % word_list_count;
 
     const char *secret_word = word_list[secret_word_idx].word;
     const char *hint = word_list[secret_word_idx].hint;
@@ -139,4 +146,28 @@ void draw_hangman(int attempt)
     {
         printf("%s\n", hangman_limbs[i]);
     }
+}
+
+int load_words(WordHint word_list[])
+{
+    FILE *fp = fopen("./data/words.txt", "r");
+
+    if (fp == NULL)
+    {
+        perror("fopen");
+        return 0;
+    }
+
+    char line[256];
+    int word_count = 0;
+
+    while (fgets(line, sizeof(line), fp) != NULL && word_count < MAX_WORDS)
+    {
+        if (sscanf(line, "%49[^|]|%99[^\n]",
+                   word_list[word_count].word,
+                   word_list[word_count].hint) == 2)
+            word_count++;
+    }
+    fclose(fp);
+    return word_count;
 }
