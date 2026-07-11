@@ -4,7 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include <errno.h>
 
 #define MAX_WORDS 100
 #define MAX_WORD_LENGTH 50
@@ -18,9 +17,19 @@ typedef struct WordHint
     char hint[MAX_HINT_LENGTH];
 } WordHint;
 
+int load_words(WordHint word_list[]);
+
 void display_word(const char guess_word[]);
 void draw_hangman(int attempt);
-int load_words(WordHint word_list[]);
+
+char read_guess(void);
+bool is_valid_guess(char guess);
+bool mark_guess(bool letters[], char guess);
+
+bool reveal_guess(size_t len,
+                  char guess_word[],
+                  const char secret_word[],
+                  char guess);
 
 int main()
 {
@@ -60,41 +69,25 @@ int main()
         display_word(guess_word);
         draw_hangman(attempt);
 
-        char guess;
-        printf("Enter a letter: ");
-        scanf(" %c", &guess);
+        char guess = read_guess();
 
-        guess = tolower(guess);
-
-        printf("\n");
-
-        if (guess < 'a' || guess > 'z')
-        {
-            puts("Please enter a valid alphabet.");
+        if (guess == '\0')
             continue;
-        }
-
-        if (guess_letters[guess - 'a'])
-        {
-            puts("You've already guessed that letter. Try again.");
+        if (!is_valid_guess(guess))
             continue;
-        }
+        if (!mark_guess(guess_letters, guess))
+            continue;
 
-        guess_letters[guess - 'a'] = true;
-
-        bool found = false;
-
-        for (size_t i = 0; i < secret_word_len; i++)
-        {
-            if (secret_word[i] == guess)
-            {
-                guess_word[i] = guess;
-                found = true;
-            }
-        }
+        bool found = reveal_guess(
+            secret_word_len,
+            guess_word,
+            secret_word,
+            guess);
 
         if (found)
+        {
             puts("Good guess!");
+        }
         else
         {
             printf("Sorry, the letter '%c' is not in the word.\n", guess);
@@ -123,7 +116,7 @@ void display_word(const char guess_word[])
 {
     printf("Word: ");
 
-    for (int i = 0; guess_word[i] != '\0'; i++)
+    for (size_t i = 0; guess_word[i] != '\0'; i++)
     {
         printf("%c ", guess_word[i]);
     }
@@ -171,4 +164,55 @@ int load_words(WordHint word_list[])
     }
     fclose(fp);
     return word_count;
+}
+
+char read_guess(void)
+{
+    char buffer[100];
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
+        return '\0';
+
+    if (buffer[1] != '\n' && buffer[1] != '\0')
+    {
+        puts("Please enter only one letter.");
+        return '\0';
+    }
+
+    return tolower(buffer[0]);
+}
+
+bool is_valid_guess(char guess)
+{
+    if (guess < 'a' || guess > 'z')
+    {
+        puts("Please enter a valid alphabet.");
+        return false;
+    }
+    return true;
+}
+
+bool mark_guess(bool letters[], char guess)
+{
+    if (letters[guess - 'a'])
+        return false;
+    letters[guess - 'a'] = true;
+    return true;
+}
+
+bool reveal_guess(size_t len,
+                  char guess_word[],
+                  const char secret_word[],
+                  char guess)
+{
+    bool found = false;
+    for (size_t i = 0; i < len; i++)
+    {
+        if (secret_word[i] == guess)
+        {
+            guess_word[i] = guess;
+            found = true;
+        }
+    }
+
+    return found;
 }
