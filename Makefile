@@ -1,11 +1,11 @@
 .PHONY: build run clean
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Wpedantic -std=c17
+CFLAGS = -Wall -Wextra -Wpedantic -std=c17 -g
 
 build:
 	mkdir -p build
-	${CC} -g ${CFLAGS} src/*.c -o build/main
+	$(CC) $(CFLAGS) -Iinclude src/*.c -o build/main
 
 run: build
 	./build/main
