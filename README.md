@@ -59,7 +59,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/lhnsnm/hangman_game
-cd hangman-game
+cd hangman_game
 ```
 
 Build the project:
