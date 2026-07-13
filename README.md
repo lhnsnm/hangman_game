@@ -58,7 +58,7 @@ The player tries to guess a hidden word by entering one letter at a time. Correc
 Clone the repository:
 
 ```bash
-git clone https://github.com/lhnsnm/hangman-game
+git clone https://github.com/lhnsnm/hangman_game
 cd hangman-game
 ```
 
